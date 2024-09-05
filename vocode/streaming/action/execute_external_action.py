@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, Optional, Type
 
-from pydantic.v1 import BaseModel
+from pydantic.v1 import BaseModel, Field
 
 from vocode.streaming.action.base_action import BaseAction
 from vocode.streaming.action.external_actions_requester import (
@@ -9,13 +9,19 @@ from vocode.streaming.action.external_actions_requester import (
     ExternalActionsRequester,
 )
 from vocode.streaming.models.actions import ActionConfig as VocodeActionConfig
-from vocode.streaming.models.actions import ActionInput, ActionOutput, ExternalActionProcessingMode
+from vocode.streaming.models.actions import (
+    ActionInput,
+    ActionOutput,
+    ExternalActionProcessingMode,
+)
 from vocode.streaming.models.message import BaseMessage
 
 
 class ExecuteExternalActionVocodeActionConfig(
     VocodeActionConfig, type="action_external"  # type: ignore
 ):
+    headers: dict = Field(default={})
+    method: str = Field(default="POST")
     processing_mode: ExternalActionProcessingMode
     name: str
     description: str
