@@ -20,6 +20,7 @@ from vocode.streaming.models.message import BaseMessage
 class ExecuteExternalActionVocodeActionConfig(
     VocodeActionConfig, type="action_external"  # type: ignore
 ):
+    action_id: str | None = None
     headers: dict = Field(default={})
     method: str = Field(default="POST")
     processing_mode: ExternalActionProcessingMode
