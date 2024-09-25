@@ -194,15 +194,18 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfigType]):
                 docs_with_scores = await self.vector_db.similarity_search_with_score(
                     self.transcript.get_last_user_message()[1]
                 )
-                docs_with_scores_str = "\n\n".join(
-                    [
+                
+                docs_with_scores_str = ""
+
+                for doc, confidence in docs_with_scores:
+                    docs_with_scores_str += (
                         "Document: "
-                        + doc[0].metadata.get("source", "")
-                        + f" (Confidence: {doc[1]})\n"
-                        + doc[0].lc_kwargs.get("page_content", "").replace(r"\n", "\n")
-                        for doc in docs_with_scores
-                    ]
-                )
+                        + doc.metadata.get("source", "")
+                        + f" (Confidence: {confidence})\n"
+                        + doc.page_content.replace(r"\n", "\n")
+                    )
+
+        
                 vector_db_result = (
                     f"Found {len(docs_with_scores)} similar documents:\n{docs_with_scores_str}"
                 )
