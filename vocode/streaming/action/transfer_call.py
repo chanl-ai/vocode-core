@@ -44,7 +44,8 @@ class TransferCallVocodeActionConfig(VocodeActionConfig, type="action_transfer_c
             assert self.phone_number, "phone number must be set"
             return self.phone_number
         else:
-            raise TypeError("Invalid input params type")
+            logger.error(f"Invalid input params type: {type(input.params)}: {input.params}")
+            return self.phone_number if self.phone_number else ""
 
     def action_attempt_to_string(self, input: ActionInput) -> str:
         assert isinstance(input.params, get_args(TransferCallParameters))
