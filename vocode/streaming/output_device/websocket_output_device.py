@@ -10,8 +10,6 @@ from vocode.streaming.models.websocket import AudioMessage, TranscriptMessage
 from vocode.streaming.output_device.rate_limit_interruptions_output_device import (
     RateLimitInterruptionsOutputDevice,
 )
-from vocode.streaming.models.synthesizer import SynthesizerConfig
-from vocode.streaming.synthesizer.base_synthesizer import encode_as_wav
 
 
 class WebsocketOutputDevice(RateLimitInterruptionsOutputDevice):
@@ -29,10 +27,6 @@ class WebsocketOutputDevice(RateLimitInterruptionsOutputDevice):
         self.active = False
 
     async def play(self, chunk: bytes):
-        chunk = encode_as_wav(chunk, SynthesizerConfig(
-                audio_encoding=AudioEncoding.LINEAR16,
-                sampling_rate=self.sampling_rate
-            ))
         await self.ws.send_text(AudioMessage.from_bytes(chunk).json())
 
     async def send_transcript(self, event: TranscriptEvent):
