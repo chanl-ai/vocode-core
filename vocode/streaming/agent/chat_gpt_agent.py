@@ -10,13 +10,20 @@ from openai import AsyncAzureOpenAI, AsyncOpenAI, NotFoundError, RateLimitError
 from vocode import sentry_span_tags
 from vocode.streaming.action.abstract_factory import AbstractActionFactory
 from vocode.streaming.action.default_factory import DefaultActionFactory
-from vocode.streaming.agent.base_agent import GeneratedResponse, RespondAgent, StreamedResponse
+from vocode.streaming.agent.base_agent import (
+    GeneratedResponse,
+    RespondAgent,
+    StreamedResponse,
+)
 from vocode.streaming.agent.openai_utils import (
     format_openai_chat_messages_from_transcript,
     openai_get_tokens,
     vector_db_result_to_openai_chat_message,
 )
-from vocode.streaming.agent.streaming_utils import collate_response_async, stream_response_async
+from vocode.streaming.agent.streaming_utils import (
+    collate_response_async,
+    stream_response_async,
+)
 from vocode.streaming.models.actions import FunctionCallActionTrigger
 from vocode.streaming.models.agent import ChatGPTAgentConfig
 from vocode.streaming.models.events import Sender
@@ -192,9 +199,9 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfigType]):
         if self.agent_config.vector_db_config:
             try:
                 docs_with_scores = await self.vector_db.similarity_search_with_score(
-                    self.transcript.get_last_user_message()[1]
+                    self.transcript.get_last_user_message()[1]  # type: ignore
                 )
-                
+
                 docs_with_scores_str = ""
 
                 for doc, confidence in docs_with_scores:
@@ -205,7 +212,6 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfigType]):
                         + doc.page_content.replace(r"\n", "\n")
                     )
 
-        
                 vector_db_result = (
                     f"Found {len(docs_with_scores)} similar documents:\n{docs_with_scores_str}"
                 )

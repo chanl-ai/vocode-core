@@ -5,7 +5,16 @@ import json
 import random
 import typing
 from enum import Enum
-from typing import TYPE_CHECKING, AsyncGenerator, Dict, Generic, Optional, Tuple, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    AsyncGenerator,
+    Dict,
+    Generic,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import sentry_sdk
 from loguru import logger
@@ -15,7 +24,9 @@ from vocode import sentry_span_tags
 from vocode.streaming.action.abstract_factory import AbstractActionFactory
 from vocode.streaming.action.base_action import BaseAction
 from vocode.streaming.action.default_factory import DefaultActionFactory
-from vocode.streaming.action.execute_external_action import ExecuteExternalActionVocodeActionConfig
+from vocode.streaming.action.execute_external_action import (
+    ExecuteExternalActionVocodeActionConfig,
+)
 from vocode.streaming.action.phone_call_action import (
     TwilioPhoneConversationAction,
     VonagePhoneConversationAction,
@@ -29,7 +40,11 @@ from vocode.streaming.models.actions import (
     EndOfTurn,
     FunctionCall,
 )
-from vocode.streaming.models.agent import AgentConfig, ChatGPTAgentConfig, LLMAgentConfig
+from vocode.streaming.models.agent import (
+    AgentConfig,
+    ChatGPTAgentConfig,
+    LLMAgentConfig,
+)
 from vocode.streaming.models.events import Sender
 from vocode.streaming.models.message import BaseMessage, BotBackchannel, SilenceMessage
 from vocode.streaming.models.model import TypedModel
@@ -138,6 +153,9 @@ class AbstractAgent(Generic[AgentConfigType]):
 
     def get_agent_config(self) -> AgentConfig:
         return self.agent_config
+
+    def update_agent_config(self, agent_config: AgentConfigType):
+        self.agent_config = agent_config
 
     def update_last_bot_message_on_cut_off(self, message: str):
         """Updates the last bot message in the conversation history when the human cuts off the bot's response."""
