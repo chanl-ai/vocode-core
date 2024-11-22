@@ -105,6 +105,11 @@ class BaseCallConfig(TypedModel, type=CallConfigType.BASE.value):  # type: ignor
     telephony_params: Optional[Dict[str, str]] = None
     direction: PhoneCallDirection
 
+    # CX agent settings - used for CX, we need to persist them across calls/texts
+    # so it can be retrieved out of band
+    cx_agent_settings: Any = {}
+
+
     @staticmethod
     def default_transcriber_config():
         raise NotImplementedError
