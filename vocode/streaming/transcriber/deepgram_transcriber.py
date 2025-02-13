@@ -418,40 +418,42 @@ class DeepgramTranscriber(BaseAsyncTranscriber[DeepgramTranscriberConfig]):
 
                     logger.debug("Terminating Deepgram transcriber sender")
 
-                async def sender(self, ws: WebSocketClientProtocol):
+                async def sender(ws: WebSocketClientProtocol):
                     """
                     Sends actual audio data to Deepgram. If no data arrives before a timeout,
                     sends a JSON keep-alive message ("AudioKeepAlive") to keep the stream open.
                     """
-                    byte_rate = self.get_byte_rate()
-                    keep_alive_interval = 5
-                    next_keep_alive = time.time() + keep_alive_interval
+                    try:
+                        logger.info("Starting Deepgram transcriber sender KeekAlive version")
 
-                    while not self._ended:
-                        try:
-                            data = await asyncio.wait_for(self.input_queue.get(), 5)
-                            self.audio_cursor += len(data) / byte_rate
-                            if not self.start_sending_ts:
-                                self.start_sending_ts = now()
-                            await ws.send(data)
-                        except asyncio.TimeoutError:
-                            pass
+                        byte_rate = self.get_byte_rate()
+                        keep_alive_interval = 4
+                        next_keep_alive = time.time() + keep_alive_interval
 
-                        if data:
-                            if not self.start_sending_ts:
-                                self.start_sending_ts = now()
+                        while not self._ended:
+                            try:
+                                data = await asyncio.wait_for(self._input_queue.get(), 4)
+                            except asyncio.exceptions.TimeoutError:
+                                pass
 
-                            await ws.send(data)
-                        elif time.time() >= next_keep_alive and not self._ended:
-                            logger.debug("Sending keepAlive JSON to Deepgram")
+                            if data:
+                                self.audio_cursor += len(data) / byte_rate
+                                if not self.start_sending_ts:
+                                    self.start_sending_ts = now()
 
-                            keep_alive_msg = json.dumps({"type": "KeepAlive"})
-                            await ws.send(keep_alive_msg)
-                            next_keep_alive = time.time() + keep_alive_interval
-                        else:
-                            logger.warning("No data received from input queue")
+                                await ws.send(data)
 
-                    logger.debug("Terminating Deepgram transcriber sender KeekAlive version")
+                            elif time.time() >= next_keep_alive and not self._ended:
+                                logger.debug("Sending keepAlive to Deepgram")
+                                keep_alive_msg = json.dumps({"type": "KeepAlive"})
+                                await ws.send(keep_alive_msg)
+                                next_keep_alive = time.time() + keep_alive_interval
+                            else:
+                                logger.warning("No data received from input queue")
+
+                        logger.debug("Terminating Deepgram transcriber sender KeekAlive version")
+                    except Exception as e:
+                        logger.error(f"[Error in sender] Deepgram: {e}")
 
                 async def receiver(ws: WebSocketClientProtocol):
                     buffer = ""
