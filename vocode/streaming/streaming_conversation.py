@@ -778,8 +778,8 @@ class StreamingConversation(AudioPipeline[OutputDeviceType]):
         await self.initial_message_tracker.wait()
 
     async def action_on_idle(self):
-        logger.debug("Conversation idle for too long, terminating")
-        self.mark_terminated(bot_disconnect=True)
+        logger.debug("Conversation idle for too long, terminating (no actually terminating)")
+        # self.mark_terminated(bot_disconnect=True)
         return
 
     async def check_for_idle(self):
