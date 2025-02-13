@@ -434,7 +434,7 @@ class DeepgramTranscriber(BaseAsyncTranscriber[DeepgramTranscriberConfig]):
                             try:
                                 data = await asyncio.wait_for(self._input_queue.get(), 4)
                             except asyncio.exceptions.TimeoutError:
-                                pass
+                                data = None
 
                             if data:
                                 self.audio_cursor += len(data) / byte_rate
