@@ -448,6 +448,8 @@ class DeepgramTranscriber(BaseAsyncTranscriber[DeepgramTranscriberConfig]):
                             keep_alive_msg = json.dumps({"type": "KeepAlive"})
                             await ws.send(keep_alive_msg)
                             next_keep_alive = time.time() + keep_alive_interval
+                        else:
+                            logger.warning("No data received from input queue")
 
                     logger.debug("Terminating Deepgram transcriber sender KeekAlive version")
 
