@@ -25,7 +25,7 @@ from vocode.utils.sentry_utils import CustomSentrySpans, sentry_configured, sent
 import time
 
 PUNCTUATION_TERMINATORS = [".", "!", "?"]
-NUM_RESTARTS = 5
+NUM_RESTARTS = 20
 NUM_AUDIO_CHANNELS = 1
 
 
