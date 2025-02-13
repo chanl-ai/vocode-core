@@ -22,6 +22,7 @@ from vocode.streaming.models.transcriber import (
 )
 from vocode.streaming.transcriber.base_transcriber import BaseAsyncTranscriber
 from vocode.utils.sentry_utils import CustomSentrySpans, sentry_configured, sentry_create_span
+import time
 
 PUNCTUATION_TERMINATORS = [".", "!", "?"]
 NUM_RESTARTS = 5
@@ -397,7 +398,7 @@ class DeepgramTranscriber(BaseAsyncTranscriber[DeepgramTranscriberConfig]):
             async with websockets.connect(deepgram_url, extra_headers=extra_headers) as ws:
                 self.connected_ts = now()
 
-                async def sender(
+                async def sender_original(
                     ws: WebSocketClientProtocol,
                 ):  # sends audio to websocket
                     byte_rate = self.get_byte_rate()
@@ -416,6 +417,39 @@ class DeepgramTranscriber(BaseAsyncTranscriber[DeepgramTranscriberConfig]):
                         await ws.send(data)
 
                     logger.debug("Terminating Deepgram transcriber sender")
+
+                async def sender(self, ws: WebSocketClientProtocol):
+                    """
+                    Sends actual audio data to Deepgram. If no data arrives before a timeout,
+                    sends a JSON keep-alive message ("AudioKeepAlive") to keep the stream open.
+                    """
+                    byte_rate = self.get_byte_rate()
+                    keep_alive_interval = 5
+                    next_keep_alive = time.time() + keep_alive_interval
+
+                    while not self._ended:
+                        try:
+                            data = await asyncio.wait_for(self.input_queue.get(), 5)
+                            self.audio_cursor += len(data) / byte_rate
+                            if not self.start_sending_ts:
+                                self.start_sending_ts = now()
+                            await ws.send(data)
+                        except asyncio.TimeoutError:
+                            pass
+
+                        if data:
+                            if not self.start_sending_ts:
+                                self.start_sending_ts = now()
+
+                            await ws.send(data)
+                        elif time.time() >= next_keep_alive and not self._ended:
+                            logger.debug("Sending keepAlive JSON to Deepgram")
+
+                            keep_alive_msg = json.dumps({"type": "KeepAlive"})
+                            await ws.send(keep_alive_msg)
+                            next_keep_alive = time.time() + keep_alive_interval
+
+                    logger.debug("Terminating Deepgram transcriber sender KeekAlive version")
 
                 async def receiver(ws: WebSocketClientProtocol):
                     buffer = ""
